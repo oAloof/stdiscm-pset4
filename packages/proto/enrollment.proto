@@ -1,0 +1,180 @@
+syntax = "proto3";
+
+package enrollment;
+
+// ============================================================================
+// Auth Service
+// ============================================================================
+
+service AuthService {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  bool success = 1;
+  string message = 2;
+  string token = 3;
+  User user = 4;
+}
+
+message LogoutRequest {
+  string token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  User user = 2;
+}
+
+// ============================================================================
+// Course Service
+// ============================================================================
+
+service CourseService {
+  rpc ListCourses(ListCoursesRequest) returns (ListCoursesResponse);
+  rpc ListSections(ListSectionsRequest) returns (ListSectionsResponse);
+  rpc EnrollStudent(EnrollStudentRequest) returns (EnrollStudentResponse);
+  rpc GetEnrollments(GetEnrollmentsRequest) returns (GetEnrollmentsResponse);
+}
+
+message ListCoursesRequest {}
+
+message ListCoursesResponse {
+  repeated Course courses = 1;
+}
+
+message ListSectionsRequest {
+  string course_id = 1;
+}
+
+message ListSectionsResponse {
+  repeated Section sections = 1;
+}
+
+message EnrollStudentRequest {
+  string student_id = 1;
+  string section_id = 2;
+}
+
+message EnrollStudentResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetEnrollmentsRequest {
+  string student_id = 1;
+}
+
+message GetEnrollmentsResponse {
+  repeated Enrollment enrollments = 1;
+}
+
+// ============================================================================
+// Grade Service
+// ============================================================================
+
+service GradeService {
+  rpc GetGrades(GetGradesRequest) returns (GetGradesResponse);
+  rpc UploadGrade(UploadGradeRequest) returns (UploadGradeResponse);
+  rpc GetSectionGrades(GetSectionGradesRequest) returns (GetSectionGradesResponse);
+}
+
+message GetGradesRequest {
+  string student_id = 1;
+}
+
+message GetGradesResponse {
+  repeated Grade grades = 1;
+}
+
+message UploadGradeRequest {
+  string student_id = 1;
+  string section_id = 2;
+  double grade_value = 3;
+  string faculty_id = 4;
+}
+
+message UploadGradeResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetSectionGradesRequest {
+  string section_id = 1;
+  string faculty_id = 2;
+}
+
+message GetSectionGradesResponse {
+  repeated Grade grades = 1;
+}
+
+// ============================================================================
+// Shared Message Types
+// ============================================================================
+
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  UserRole role = 4;
+}
+
+enum UserRole {
+  STUDENT = 0;
+  FACULTY = 1;
+  ADMIN = 2;
+}
+
+message Course {
+  string id = 1;
+  string code = 2;
+  string name = 3;
+  string description = 4;
+}
+
+message Section {
+  string id = 1;
+  string course_id = 2;
+  string section_code = 3;
+  string faculty_id = 4;
+  string faculty_name = 5;
+  int32 max_capacity = 6;
+  int32 enrolled_count = 7;
+}
+
+message Enrollment {
+  string id = 1;
+  string student_id = 2;
+  string section_id = 3;
+  string course_code = 4;
+  string course_name = 5;
+  string section_code = 6;
+  string enrolled_at = 7;
+}
+
+message Grade {
+  string id = 1;
+  string student_id = 2;
+  string student_name = 3;
+  string section_id = 4;
+  string course_code = 5;
+  string course_name = 6;
+  double grade_value = 7;
+  string uploaded_at = 8;
+}

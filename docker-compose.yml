@@ -1,0 +1,102 @@
+version: '3.8'
+
+networks:
+  pset4_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: packages/frontend/Dockerfile
+    container_name: frontend
+    networks:
+      pset4_network:
+        ipv4_address: 172.20.0.10
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_GATEWAY_URL=http://172.20.0.20:4000
+    depends_on:
+      - api-gateway
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: packages/api-gateway/Dockerfile
+    container_name: api-gateway
+    networks:
+      pset4_network:
+        ipv4_address: 172.20.0.20
+    ports:
+      - "4000:4000"
+    environment:
+      - AUTH_SERVICE_HOST=172.20.0.30
+      - AUTH_SERVICE_PORT=50051
+      - COURSE_SERVICE_HOST=172.20.0.40
+      - COURSE_SERVICE_PORT=50052
+      - GRADE_SERVICE_HOST=172.20.0.50
+      - GRADE_SERVICE_PORT=50053
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=production
+    depends_on:
+      - auth-service
+      - course-service
+      - grade-service
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: packages/auth-service/Dockerfile
+    container_name: auth-service
+    networks:
+      pset4_network:
+        ipv4_address: 172.20.0.30
+    ports:
+      - "50051:50051"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - GRPC_PORT=50051
+      - NODE_ENV=production
+
+  course-service:
+    build:
+      context: .
+      dockerfile: packages/course-service/Dockerfile
+    container_name: course-service
+    networks:
+      pset4_network:
+        ipv4_address: 172.20.0.40
+    ports:
+      - "50052:50052"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - GRPC_PORT=50052
+      - NODE_ENV=production
+
+  grade-service:
+    build:
+      context: .
+      dockerfile: packages/grade-service/Dockerfile
+    container_name: grade-service
+    networks:
+      pset4_network:
+        ipv4_address: 172.20.0.50
+    ports:
+      - "50053:50053"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - GRPC_PORT=50053
+      - NODE_ENV=production

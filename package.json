@@ -1,0 +1,27 @@
+{
+  "name": "pset4-distributed-enrollment",
+  "version": "1.0.0",
+  "description": "Distributed Online Enrollment System with Microservices",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "keywords": [
+    "distributed-systems",
+    "microservices",
+    "grpc",
+    "enrollment-system"
+  ],
+  "author": "oAloof",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  }
+}
