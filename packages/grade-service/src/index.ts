@@ -1,11 +1,11 @@
 import dotenv from 'dotenv';
+import { createLogger } from '@pset4/shared-types';
 
 dotenv.config();
 
+const logger = createLogger('grade-service');
 const PORT = process.env.GRPC_PORT || 50053;
 
-console.log('Starting Grade Service...');
-console.log(`gRPC server will listen on port ${PORT}`);
-
-// TODO: Implement gRPC server
-console.log('Grade Service implementation pending');
+logger.info('Starting Grade Service...');
+logger.info(`gRPC server will listen on port ${PORT}`);
+logger.warn('Grade Service implementation pending');

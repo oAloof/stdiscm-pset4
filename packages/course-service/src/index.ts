@@ -1,12 +1,11 @@
 import dotenv from 'dotenv';
+import { createLogger } from '@pset4/shared-types';
 
 dotenv.config();
 
+const logger = createLogger('course-service');
 const PORT = process.env.GRPC_PORT || 50052;
 
-console.log('Starting Course Service...');
-console.log(`gRPC server will listen on port ${PORT}`);
-
-// TODO: Implement gRPC server for CourseService
-// TODO: Implement ListCourses, ListSections, EnrollStudent, GetEnrollments handlers
-console.log('Course Service implementation pending');
+logger.info('Starting Course Service...');
+logger.info(`gRPC server will listen on port ${PORT}`);
+logger.warn('Course Service implementation pending');
