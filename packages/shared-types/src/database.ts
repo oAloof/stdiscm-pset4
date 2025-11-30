@@ -1,6 +1,7 @@
-// TODO: Define database types for Supabase schema
-// Tables: users, courses, sections, enrollments, grades
-
+/**
+ * Database schema types for Supabase
+ * Tables: users, courses, sections, enrollments, grades
+ */
 export interface Database {
   public: {
     Tables: {
@@ -55,4 +56,22 @@ export interface Database {
   };
 }
 
-// TODO: Implement Supabase client creation function
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+/**
+ * Creates a Supabase client instance with proper typing
+ * Uses environment variables for configuration
+ * @returns Typed Supabase client
+ */
+export function createSupabaseClient(): SupabaseClient<Database> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error(
+      'Missing Supabase credentials. Please ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY) are set in your .env file.'
+    );
+  }
+
+  return createClient<Database>(supabaseUrl, supabaseKey);
+}

@@ -117,28 +117,6 @@ npm run dev
 cd packages/frontend
 npm run dev
 ```
-
-## Features
-
-- [x] **Session Management**: JWT-based authentication across distributed nodes
-- [ ] **Course Viewing**: Browse available courses and sections
-- [ ] **Enrollment**: Students can enroll in open courses
-- [ ] **Grade Viewing**: Students view previous grades
-- [ ] **Grade Upload**: Faculty can upload grades
-
-## Testing Fault Tolerance
-
-The system demonstrates fault tolerance by continuing to work even when individual services are down:
-
-```bash
-# Stop the Course Service
-docker stop course-service
-
-# Frontend and other services continue working
-# Course-related features return appropriate errors
-# Auth, grades still functional
-```
-
 ## Database Schema
 
 The system uses Supabase PostgreSQL with the following tables:
@@ -158,24 +136,3 @@ The system uses Supabase PostgreSQL with the following tables:
 - **Authentication**: JWT
 - **Deployment**: Docker + Docker Compose
 - **Communication**: gRPC (services), REST (frontend↔gateway)
-
-## Development Notes
-
-- Proto definitions are in `packages/proto/enrollment.proto`
-- Shared types and utilities are in `packages/shared-types`
-- Each service is independently deployable
-- Services communicate via gRPC
-- Frontend communicates with API Gateway via REST
-
-## Academic Context
-
-This is Problem Set 4 for STDISCM (Distributed Systems and Concurrent Computing). The project demonstrates:
-- Microservices architecture
-- Distributed system fault tolerance
-- Service-to-service communication (gRPC)
-- Session management across nodes
-- Docker networking with explicit IP addresses
-
-## License
-
-MIT
