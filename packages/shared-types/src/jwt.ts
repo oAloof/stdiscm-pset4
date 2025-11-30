@@ -24,6 +24,21 @@ export function generateToken(payload: JWTPayload): string {
 
 
 /**
+ * Type guard to check if an object matches the JWTPayload structure
+ */
+function isJWTPayload(obj: any): obj is JWTPayload {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.userId === 'string' &&
+    obj.userId.length > 0 &&
+    typeof obj.email === 'string' &&
+    obj.email.length > 0 &&
+    (obj.role === 'STUDENT' || obj.role === 'FACULTY' || obj.role === 'ADMIN')
+  );
+}
+
+/**
  * Verifies and decodes a JWT token
  * @param token JWT token string to verify
  * @returns Decoded payload if valid, null if invalid or expired
@@ -38,19 +53,11 @@ export function verifyToken(token: string): JWTPayload | null {
   try {
     const decoded = jwt.verify(token, secret);
 
-    // Cast to any to access custom fields
-    const payload = decoded as any;
-
-    // Validate that expected fields exist
-    if (!payload.userId || !payload.email || !payload.role) {
+    if (!isJWTPayload(decoded)) {
       return null;
     }
 
-    return {
-      userId: payload.userId,
-      email: payload.email,
-      role: payload.role
-    };
+    return decoded;
   } catch (error) {
     // Token is invalid, expired, or tampered with
     return null;
