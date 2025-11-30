@@ -1,6 +1,6 @@
 /**
- * Database schema types for Supabase
- * Tables: users, courses, sections, enrollments, grades
+ * Supabase database schema type definitions.
+ * Defines tables: users, courses, sections, enrollments, grades.
  */
 export interface Database {
   public: {
@@ -56,12 +56,22 @@ export interface Database {
   };
 }
 
+// Type aliases for database tables.
+export type User = Database['public']['Tables']['users']['Row'];
+export type Course = Database['public']['Tables']['courses']['Row'];
+export type Section = Database['public']['Tables']['sections']['Row'];
+export type Enrollment = Database['public']['Tables']['enrollments']['Row'];
+export type Grade = Database['public']['Tables']['grades']['Row'];
+
+export type UserRole = User['role'];
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 /**
- * Creates a Supabase client instance with proper typing
- * Uses environment variables for configuration
- * @returns Typed Supabase client
+ * Creates a typed Supabase client instance.
+ * 
+ * @throws {Error} If SUPABASE_URL or authentication key environment variables are not set.
+ * @returns {SupabaseClient<Database>} Configured Supabase client with full database typing.
  */
 export function createSupabaseClient(): SupabaseClient<Database> {
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -69,7 +79,7 @@ export function createSupabaseClient(): SupabaseClient<Database> {
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error(
-      'Missing Supabase credentials. Please ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY) are set in your .env file.'
+      'Missing required environment variables: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY)'
     );
   }
 
