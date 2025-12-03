@@ -87,7 +87,7 @@ function createGradeClient() {
   }
 }
 
-// Create and export client instances
+// Export client instances for use in route handlers
 export const authClient = createAuthClient();
 export const courseClient = createCourseClient();
 export const gradeClient = createGradeClient();

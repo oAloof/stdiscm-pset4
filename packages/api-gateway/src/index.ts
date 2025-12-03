@@ -2,7 +2,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createLogger } from '@pset4/shared-types';
-import { authClient, courseClient, gradeClient } from './grpc-clients';
+import authRoutes from './routes/auth';
+import courseRoutes from './routes/course';
 
 dotenv.config();
 
@@ -41,10 +42,8 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'API Gateway running' });
 });
 
-// Auth routes
-import authRoutes from './routes/auth';
 app.use('/auth', authRoutes);
-
+app.use('/courses', courseRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
