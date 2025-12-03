@@ -41,6 +41,8 @@ services:
       - COURSE_SERVICE_PORT=50052
       - GRADE_SERVICE_HOST=172.20.0.50
       - GRADE_SERVICE_PORT=50053
+      - FRONTEND_URL=http://172.20.0.10:3000
+      - API_GATEWAY_PORT=4000
       - JWT_SECRET=${JWT_SECRET}
       - NODE_ENV=production
     depends_on:
