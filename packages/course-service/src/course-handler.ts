@@ -184,10 +184,77 @@ export async function handleEnrollStudent(call: any, callback: grpc.sendUnaryDat
   }
 }
 
-/** Placeholder for GetEnrollments RPC. */
-export function handleGetEnrollments(call: any, callback: grpc.sendUnaryData<any>): void {
-  callback({
-    code: grpc.status.UNIMPLEMENTED,
-    message: 'GetEnrollments handler not yet implemented',
-  });
+/**
+ * Handles GetEnrollments requests by fetching student's enrollments with course details.
+ */
+export async function handleGetEnrollments(call: any, callback: grpc.sendUnaryData<any>): Promise<void> {
+  const { student_id } = call.request;
+
+  logger.info('GetEnrollments request received', { student_id });
+
+  if (!student_id) {
+    logger.warn('GetEnrollments failed: Missing student_id');
+    callback({
+      code: grpc.status.INVALID_ARGUMENT,
+      message: 'student_id is required',
+    });
+    return;
+  }
+
+  try {
+    const supabase = createSupabaseClient();
+    const { data: enrollments, error } = await supabase
+      .from('enrollments')
+      .select(`
+        *,
+        section:sections!section_id(
+          section_code,
+          course:courses!course_id(
+            code,
+            name
+          )
+        )
+      `)
+      .eq('student_id', student_id);
+
+    const typedEnrollments = enrollments as any[] | null;
+
+    if (error) {
+      logger.error('Database error fetching enrollments', {
+        error: error.message,
+        student_id
+      });
+      callback({
+        code: grpc.status.INTERNAL,
+        message: 'Failed to fetch enrollments',
+      });
+      return;
+    }
+
+    logger.info('Enrollments fetched successfully', {
+      count: typedEnrollments?.length || 0,
+      student_id
+    });
+
+    callback(null, {
+      enrollments: typedEnrollments?.map(enrollment => ({
+        id: enrollment.id,
+        student_id: enrollment.student_id,
+        section_id: enrollment.section_id,
+        course_code: enrollment.section?.course?.code || '',
+        course_name: enrollment.section?.course?.name || '',
+        section_code: enrollment.section?.section_code || '',
+        enrolled_at: enrollment.enrolled_at,
+      })) || [],
+    });
+  } catch (error: any) {
+    logger.error('Unexpected error in GetEnrollments', {
+      error: error.message,
+      student_id
+    });
+    callback({
+      code: grpc.status.INTERNAL,
+      message: 'An error occurred while fetching enrollments',
+    });
+  }
 }
