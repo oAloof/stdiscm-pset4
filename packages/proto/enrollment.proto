@@ -24,18 +24,14 @@ message LoginResponse {
   User user = 4;
 }
 
-message LogoutRequest {
-  string token = 1;
-}
+message LogoutRequest { string token = 1; }
 
 message LogoutResponse {
   bool success = 1;
   string message = 2;
 }
 
-message ValidateTokenRequest {
-  string token = 1;
-}
+message ValidateTokenRequest { string token = 1; }
 
 message ValidateTokenResponse {
   bool valid = 1;
@@ -53,19 +49,16 @@ service CourseService {
   rpc GetEnrollments(GetEnrollmentsRequest) returns (GetEnrollmentsResponse);
 }
 
-message ListCoursesRequest {}
-
-message ListCoursesResponse {
-  repeated Course courses = 1;
+message ListCoursesRequest {
+  optional int32 limit = 1;
+  optional int32 offset = 2;
 }
 
-message ListSectionsRequest {
-  string course_id = 1;
-}
+message ListCoursesResponse { repeated Course courses = 1; }
 
-message ListSectionsResponse {
-  repeated Section sections = 1;
-}
+message ListSectionsRequest { string course_id = 1; }
+
+message ListSectionsResponse { repeated Section sections = 1; }
 
 message EnrollStudentRequest {
   string student_id = 1;
@@ -77,13 +70,9 @@ message EnrollStudentResponse {
   string message = 2;
 }
 
-message GetEnrollmentsRequest {
-  string student_id = 1;
-}
+message GetEnrollmentsRequest { string student_id = 1; }
 
-message GetEnrollmentsResponse {
-  repeated Enrollment enrollments = 1;
-}
+message GetEnrollmentsResponse { repeated Enrollment enrollments = 1; }
 
 // ============================================================================
 // Grade Service
@@ -92,16 +81,13 @@ message GetEnrollmentsResponse {
 service GradeService {
   rpc GetGrades(GetGradesRequest) returns (GetGradesResponse);
   rpc UploadGrade(UploadGradeRequest) returns (UploadGradeResponse);
-  rpc GetSectionGrades(GetSectionGradesRequest) returns (GetSectionGradesResponse);
+  rpc GetSectionGrades(GetSectionGradesRequest)
+      returns (GetSectionGradesResponse);
 }
 
-message GetGradesRequest {
-  string student_id = 1;
-}
+message GetGradesRequest { string student_id = 1; }
 
-message GetGradesResponse {
-  repeated Grade grades = 1;
-}
+message GetGradesResponse { repeated Grade grades = 1; }
 
 message UploadGradeRequest {
   string student_id = 1;
@@ -120,9 +106,7 @@ message GetSectionGradesRequest {
   string faculty_id = 2;
 }
 
-message GetSectionGradesResponse {
-  repeated Grade grades = 1;
-}
+message GetSectionGradesResponse { repeated Grade grades = 1; }
 
 // ============================================================================
 // Shared Message Types
@@ -162,10 +146,12 @@ message Enrollment {
   string id = 1;
   string student_id = 2;
   string section_id = 3;
-  string course_code = 4;
-  string course_name = 5;
-  string section_code = 6;
-  string enrolled_at = 7;
+  string course_id = 4;
+  string course_code = 5;
+  string course_name = 6;
+  string section_code = 7;
+  string faculty_name = 8;
+  string enrolled_at = 9;
 }
 
 message Grade {

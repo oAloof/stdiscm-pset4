@@ -5,15 +5,27 @@ const logger = createLogger('course-handler');
 
 /**
  * Handles ListCourses requests by fetching all courses from database.
+ * Supports optional pagination via limit and offset.
  */
 export async function handleListCourses(call: any, callback: grpc.sendUnaryData<any>): Promise<void> {
-  logger.info('ListCourses request received');
+  const { limit, offset } = call.request;
+
+  logger.info('ListCourses request received', { limit, offset });
 
   try {
     const supabase = createSupabaseClient();
-    const { data: courses, error } = await supabase
-      .from('courses')
-      .select('*');
+
+    let query = supabase.from('courses').select('*');
+
+    // Apply pagination if provided
+    if (limit) {
+      query = query.limit(limit);
+    }
+    if (offset) {
+      query = query.range(offset, offset + (limit || 100) - 1);
+    }
+
+    const { data: courses, error } = await query;
 
     const typedCourses = courses as Course[] | null;
 
@@ -210,7 +222,11 @@ export async function handleGetEnrollments(call: any, callback: grpc.sendUnaryDa
         section:sections!section_id(
           section_code,
           course:courses!course_id(
+            id,
             code,
+            name
+          ),
+          faculty:users!faculty_id(
             name
           )
         )
@@ -241,9 +257,11 @@ export async function handleGetEnrollments(call: any, callback: grpc.sendUnaryDa
         id: enrollment.id,
         student_id: enrollment.student_id,
         section_id: enrollment.section_id,
+        course_id: enrollment.section?.course?.id || '',
         course_code: enrollment.section?.course?.code || '',
         course_name: enrollment.section?.course?.name || '',
         section_code: enrollment.section?.section_code || '',
+        faculty_name: enrollment.section?.faculty?.name || '',
         enrolled_at: enrollment.enrolled_at,
       })) || [],
     });
