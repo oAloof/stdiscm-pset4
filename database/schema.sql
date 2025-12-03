@@ -63,7 +63,54 @@ CREATE INDEX IF NOT EXISTS idx_enrollments_section ON enrollments(section_id);
 CREATE INDEX IF NOT EXISTS idx_grades_student ON grades(student_id);
 CREATE INDEX IF NOT EXISTS idx_grades_section ON grades(section_id);
 
--- Sample data for testing (optional)
+-- Transactional enrollment function
+CREATE OR REPLACE FUNCTION enroll_student_transactional(
+  p_student_id UUID,
+  p_section_id UUID
+) RETURNS TABLE(success BOOLEAN, message TEXT) AS $$
+DECLARE
+  v_enrolled_count INT;
+  v_max_capacity INT;
+BEGIN
+  -- Lock section row (prevents race conditions)
+  SELECT enrolled_count, max_capacity 
+  INTO v_enrolled_count, v_max_capacity
+  FROM sections
+  WHERE id = p_section_id
+  FOR UPDATE;
+
+  -- Validate section exists
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT FALSE, 'Section not found'::TEXT;
+    RETURN;
+  END IF;
+
+  -- Check capacity
+  IF v_enrolled_count >= v_max_capacity THEN
+    RETURN QUERY SELECT FALSE, 'Section is full'::TEXT;
+    RETURN;
+  END IF;
+
+  -- Insert enrollment (will fail if duplicate due to UNIQUE constraint)
+  INSERT INTO enrollments (student_id, section_id)
+  VALUES (p_student_id, p_section_id);
+
+  -- Increment count (same transaction, auto-rollback on failure)
+  UPDATE sections 
+  SET enrolled_count = enrolled_count + 1
+  WHERE id = p_section_id;
+
+  RETURN QUERY SELECT TRUE, 'Student enrolled successfully'::TEXT;
+
+EXCEPTION
+  WHEN unique_violation THEN
+    RETURN QUERY SELECT FALSE, 'Student already enrolled in this section'::TEXT;
+  WHEN OTHERS THEN
+    RETURN QUERY SELECT FALSE, 'Database error occurred'::TEXT;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Sample data for testing
 -- Password for all test users: "password123" (hashed with bcrypt)
 
 -- Insert sample faculty
