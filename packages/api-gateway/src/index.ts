@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createLogger } from '@pset4/shared-types';
+import { authClient, courseClient, gradeClient } from './grpc-clients';
 
 dotenv.config();
 
