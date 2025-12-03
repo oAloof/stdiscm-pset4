@@ -1,6 +1,6 @@
 import * as grpc from '@grpc/grpc-js';
 import bcrypt from 'bcrypt';
-import { createSupabaseClient, createLogger, generateToken, User } from '@pset4/shared-types';
+import { createSupabaseClient, createLogger, generateToken, verifyToken, roleToProtoEnum, User } from '@pset4/shared-types';
 
 const logger = createLogger('auth-handler');
 
@@ -73,7 +73,7 @@ export async function handleLogin(call: any, callback: grpc.sendUnaryData<any>):
         id: typedUser.id,
         email: typedUser.email,
         name: typedUser.name,
-        role: mapRoleToProtoEnum(typedUser.role),
+        role: roleToProtoEnum(typedUser.role),
       },
     });
   } catch (error: any) {
@@ -83,20 +83,6 @@ export async function handleLogin(call: any, callback: grpc.sendUnaryData<any>):
       code: grpc.status.INTERNAL,
       message: 'An error occurred during login',
     });
-  }
-}
-
-/** Converts database role strings to protobuf enum integers. */
-function mapRoleToProtoEnum(role: string): number {
-  switch (role) {
-    case 'STUDENT':
-      return 0;
-    case 'FACULTY':
-      return 1;
-    case 'ADMIN':
-      return 2;
-    default:
-      return 0;
   }
 }
 
@@ -117,10 +103,45 @@ export function handleLogout(call: any, callback: grpc.sendUnaryData<any>): void
   });
 }
 
-/** Placeholder for ValidateToken RPC. */
+/**
+ * Handles token validation requests from other microservices.
+ * Verifies JWT token and returns user data if valid.
+ */
 export function handleValidateToken(call: any, callback: grpc.sendUnaryData<any>): void {
-  callback({
-    code: grpc.status.UNIMPLEMENTED,
-    message: 'ValidateToken handler not yet implemented',
+  const { token } = call.request;
+
+  if (!token) {
+    logger.warn('Token validation failed: No token provided');
+    callback(null, {
+      valid: false,
+      user: null,
+    });
+    return;
+  }
+
+  const payload = verifyToken(token);
+
+  if (!payload) {
+    logger.warn('Token validation failed: Invalid or expired token');
+    callback(null, {
+      valid: false,
+      user: null,
+    });
+    return;
+  }
+
+  logger.info('Token validation successful', {
+    userId: payload.userId,
+    role: payload.role
+  });
+
+  callback(null, {
+    valid: true,
+    user: {
+      id: payload.userId,
+      email: payload.email,
+      name: '',
+      role: roleToProtoEnum(payload.role),
+    },
   });
 }
