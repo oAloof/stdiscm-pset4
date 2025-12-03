@@ -41,10 +41,10 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'API Gateway running' });
 });
 
-// Route placeholders (will be added in future issues)
-// app.use('/auth', authRoutes);
-// app.use('/courses', courseRoutes);
-// app.use('/grades', gradeRoutes);
+// Auth routes
+import authRoutes from './routes/auth';
+app.use('/auth', authRoutes);
+
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
