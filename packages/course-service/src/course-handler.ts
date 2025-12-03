@@ -1,11 +1,48 @@
 import * as grpc from '@grpc/grpc-js';
+import { createSupabaseClient, createLogger, Course } from '@pset4/shared-types';
 
-/** Placeholder for ListCourses RPC. */
-export function handleListCourses(call: any, callback: grpc.sendUnaryData<any>): void {
-  callback({
-    code: grpc.status.UNIMPLEMENTED,
-    message: 'ListCourses handler not yet implemented',
-  });
+const logger = createLogger('course-handler');
+
+/**
+ * Handles ListCourses requests by fetching all courses from database.
+ */
+export async function handleListCourses(call: any, callback: grpc.sendUnaryData<any>): Promise<void> {
+  logger.info('ListCourses request received');
+
+  try {
+    const supabase = createSupabaseClient();
+    const { data: courses, error } = await supabase
+      .from('courses')
+      .select('*');
+
+    const typedCourses = courses as Course[] | null;
+
+    if (error) {
+      logger.error('Database error fetching courses', { error: error.message });
+      callback({
+        code: grpc.status.INTERNAL,
+        message: 'Failed to fetch courses',
+      });
+      return;
+    }
+
+    logger.info('Courses fetched successfully', { count: typedCourses?.length || 0 });
+
+    callback(null, {
+      courses: typedCourses?.map(course => ({
+        id: course.id,
+        code: course.code,
+        name: course.name,
+        description: course.description,
+      })) || [],
+    });
+  } catch (error: any) {
+    logger.error('Unexpected error in ListCourses', { error: error.message });
+    callback({
+      code: grpc.status.INTERNAL,
+      message: 'An error occurred while fetching courses',
+    });
+  }
 }
 
 /** Placeholder for ListSections RPC. */
