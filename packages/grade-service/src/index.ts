@@ -1,6 +1,9 @@
+import path from 'path';
 import dotenv from 'dotenv';
 import { startGrpcServer } from './grpc-server';
 
-dotenv.config();
+// Load .env from root directory for local development
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config(); // Fallback/Override
 
 startGrpcServer();

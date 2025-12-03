@@ -1,11 +1,14 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import { createLogger } from '@pset4/shared-types';
 import authRoutes from './routes/auth';
 import courseRoutes from './routes/course';
 
-dotenv.config();
+// Load .env from root directory for local development
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config(); // Fallback/Override
 
 const logger = createLogger('api-gateway');
 const app = express();
