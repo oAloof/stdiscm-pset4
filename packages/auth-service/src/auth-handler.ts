@@ -100,11 +100,20 @@ function mapRoleToProtoEnum(role: string): number {
   }
 }
 
-/** Placeholder for Logout RPC. */
+/**
+ * Handles logout requests.
+ * This handler logs the event for audit purposes and returns success.
+ */
 export function handleLogout(call: any, callback: grpc.sendUnaryData<any>): void {
-  callback({
-    code: grpc.status.UNIMPLEMENTED,
-    message: 'Logout handler not yet implemented',
+  const { token } = call.request;
+
+  logger.info('Logout request received', {
+    tokenProvided: !!token
+  });
+
+  callback(null, {
+    success: true,
+    message: 'Logged out successfully',
   });
 }
 
