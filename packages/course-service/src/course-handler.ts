@@ -45,12 +45,67 @@ export async function handleListCourses(call: any, callback: grpc.sendUnaryData<
   }
 }
 
-/** Placeholder for ListSections RPC. */
-export function handleListSections(call: any, callback: grpc.sendUnaryData<any>): void {
-  callback({
-    code: grpc.status.UNIMPLEMENTED,
-    message: 'ListSections handler not yet implemented',
-  });
+/**
+ * Handles ListSections requests by fetching sections for a course with faculty info.
+ */
+export async function handleListSections(call: any, callback: grpc.sendUnaryData<any>): Promise<void> {
+  const { course_id } = call.request;
+
+  logger.info('ListSections request received', { course_id });
+
+  if (!course_id) {
+    logger.warn('ListSections failed: Missing course_id parameter');
+    callback({
+      code: grpc.status.INVALID_ARGUMENT,
+      message: 'course_id is required',
+    });
+    return;
+  }
+
+  try {
+    const supabase = createSupabaseClient();
+    const { data: sections, error } = await supabase
+      .from('sections')
+      .select(`
+        *,
+        faculty:users!faculty_id(name)
+      `)
+      .eq('course_id', course_id);
+
+    const typedSections = sections as any[] | null;
+
+    if (error) {
+      logger.error('Database error fetching sections', { error: error.message, course_id });
+      callback({
+        code: grpc.status.INTERNAL,
+        message: 'Failed to fetch sections',
+      });
+      return;
+    }
+
+    logger.info('Sections fetched successfully', {
+      count: typedSections?.length || 0,
+      course_id
+    });
+
+    callback(null, {
+      sections: typedSections?.map(section => ({
+        id: section.id,
+        course_id: section.course_id,
+        section_code: section.section_code,
+        faculty_id: section.faculty_id,
+        faculty_name: section.faculty?.name || 'Unknown',
+        max_capacity: section.max_capacity,
+        enrolled_count: section.enrolled_count,
+      })) || [],
+    });
+  } catch (error: any) {
+    logger.error('Unexpected error in ListSections', { error: error.message, course_id });
+    callback({
+      code: grpc.status.INTERNAL,
+      message: 'An error occurred while fetching sections',
+    });
+  }
 }
 
 /** Placeholder for EnrollStudent RPC. */
