@@ -58,7 +58,6 @@ export function startGrpcServer(): void {
     }
   );
 
-  // Graceful shutdown handlers
   const shutdown = () => {
     logger.info('Shutting down gRPC server...');
     server.forceShutdown();
