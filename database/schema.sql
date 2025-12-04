@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS grades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     section_id UUID NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
-    grade_value DECIMAL(5,2) NOT NULL CHECK (grade_value >= 0 AND grade_value <= 100),
+    grade_value DECIMAL(3,1) NOT NULL CHECK (grade_value >= 0 AND grade_value <= 4.0 AND (grade_value * 10) % 5 = 0),
     uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(student_id, section_id)
 );

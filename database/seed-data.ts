@@ -5,7 +5,7 @@ import { createSupabaseClient } from '@pset4/shared-types';
 dotenv.config({ path: '../.env' });
 
 // Valid bcrypt hash for "password123"
-const VALID_PASSWORD_HASH = '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+const VALID_PASSWORD_HASH = '$2b$10$VkkBYbohTTksjsDWbI7aoezO2aefnX3OcFJMTS6VmvE25UyCh6P12';
 
 interface User {
   id: string;
@@ -122,6 +122,36 @@ async function seedData() {
 
       if (enrollError) throw new Error(`Failed to create enrollments: ${enrollError.message}`);
       console.log(`Created/Updated ${enrollmentsToCreate.length} enrollments.`);
+
+      // 5. Create Grades (GPA Scale 0.0 - 4.0)
+      console.log('\nCreating grades...');
+      const gradesToCreate: any[] = [];
+
+      // Grade for Student 1 in Section 1 (GPA 4.0)
+      gradesToCreate.push({
+        student_id: students[0].id,
+        section_id: sections[0].id,
+        grade_value: 4.0,
+        uploaded_at: new Date().toISOString()
+      });
+
+      // Grade for Student 2 in Section 1 (GPA 3.5)
+      if (students.length > 1) {
+        gradesToCreate.push({
+          student_id: students[1].id,
+          section_id: sections[0].id,
+          grade_value: 3.5,
+          uploaded_at: new Date().toISOString()
+        });
+      }
+
+      const { error: gradeError } = await supabase
+        .from('grades')
+        // @ts-ignore
+        .upsert(gradesToCreate, { onConflict: 'student_id,section_id' });
+
+      if (gradeError) throw new Error(`Failed to create grades: ${gradeError.message}`);
+      console.log(`Created/Updated ${gradesToCreate.length} grades.`);
     }
 
     console.log('\nSeeding completed successfully!');

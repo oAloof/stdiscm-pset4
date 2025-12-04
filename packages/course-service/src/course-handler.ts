@@ -3,6 +3,36 @@ import { createSupabaseClient, createLogger, Course } from '@pset4/shared-types'
 
 const logger = createLogger('course-handler');
 
+// --- Interfaces for Query Results ---
+
+interface SectionWithDetails {
+  id: string;
+  course_id: string;
+  section_code: string;
+  faculty_id: string;
+  faculty: { name: string } | null;
+  max_capacity: number;
+  enrolled_count: number;
+}
+
+interface EnrollmentWithDetails {
+  id: string;
+  student_id: string;
+  section_id: string;
+  enrolled_at: string;
+  section: {
+    section_code: string;
+    course: {
+      id: string;
+      code: string;
+      name: string;
+    } | null;
+    faculty: {
+      name: string;
+    } | null;
+  } | null;
+}
+
 /**
  * Handles ListCourses requests by fetching all courses from database.
  * Supports optional pagination via limit and offset.
@@ -84,7 +114,7 @@ export async function handleListSections(call: any, callback: grpc.sendUnaryData
       `)
       .eq('course_id', course_id);
 
-    const typedSections = sections as any[] | null;
+    const typedSections = sections as SectionWithDetails[] | null;
 
     if (error) {
       logger.error('Database error fetching sections', { error: error.message, course_id });
@@ -122,7 +152,7 @@ export async function handleListSections(call: any, callback: grpc.sendUnaryData
 
 /**
  * Handles EnrollStudent requests using atomic database transaction.
- * All business logic (capacity, duplicates, increment) handled in database.
+ * Business logic (capacity, duplicates) is handled by the database transaction.
  */
 export async function handleEnrollStudent(call: any, callback: grpc.sendUnaryData<any>): Promise<void> {
   const { student_id, section_id } = call.request;
@@ -233,7 +263,7 @@ export async function handleGetEnrollments(call: any, callback: grpc.sendUnaryDa
       `)
       .eq('student_id', student_id);
 
-    const typedEnrollments = enrollments as any[] | null;
+    const typedEnrollments = enrollments as EnrollmentWithDetails[] | null;
 
     if (error) {
       logger.error('Database error fetching enrollments', {

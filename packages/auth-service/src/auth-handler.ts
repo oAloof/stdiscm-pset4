@@ -77,7 +77,7 @@ export async function handleLogin(call: any, callback: grpc.sendUnaryData<any>):
       },
     });
   } catch (error: any) {
-    logger.error('Login error', { email, error: error.message });
+    logger.error('Unexpected error in Login', { email, error: error.message });
 
     callback({
       code: grpc.status.INTERNAL,
@@ -88,7 +88,7 @@ export async function handleLogin(call: any, callback: grpc.sendUnaryData<any>):
 
 /**
  * Handles logout requests.
- * This handler logs the event for audit purposes and returns success.
+ * Logs the logout event for audit purposes.
  */
 export function handleLogout(call: any, callback: grpc.sendUnaryData<any>): void {
   const { token } = call.request;
