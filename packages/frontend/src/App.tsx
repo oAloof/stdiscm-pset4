@@ -1,69 +1,15 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
-
-import LoginPage from './views/LoginPage';
-import Courses from './views/Courses';
-import FacultyPage from './views/FacultyPage';
-import Sections from "./views/Sections";
-import Enrollments from "./views/Enrollments";
-import ViewGrades from "./views/ViewGrades";
-
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Route */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<LoginPage />} />
+    <div className="app">
+      <h1>Distributed Enrollment System</h1>
+      <p>Frontend implementation pending</p>
 
-        {/* Protected Student Route */}
-        <Route
-          path="/courses"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
-              <Courses />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/courses/sections/:courseId"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
-              <Sections />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/student/enrollments"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
-              <Enrollments />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/student/grades"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
-              <ViewGrades />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Protected Faculty Route */}
-        <Route
-          path="/faculty"
-          element={
-            <ProtectedRoute allowedRoles={["FACULTY"]}>
-              <FacultyPage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+      {/* TODO: Implement routes and pages */}
+      {/* - Login page */}
+      {/* - Course listing */}
+      {/* - Enrollment */}
+      {/* - Grades view */}
+    </div>
   );
 }
 
