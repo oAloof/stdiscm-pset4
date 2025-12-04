@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS grades (
     UNIQUE(student_id, section_id)
 );
 
+
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
@@ -62,6 +63,13 @@ CREATE INDEX IF NOT EXISTS idx_enrollments_student ON enrollments(student_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_section ON enrollments(section_id);
 CREATE INDEX IF NOT EXISTS idx_grades_student ON grades(student_id);
 CREATE INDEX IF NOT EXISTS idx_grades_section ON grades(section_id);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE enrollments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE grades ENABLE ROW LEVEL SECURITY;
 
 -- Transactional enrollment function
 CREATE OR REPLACE FUNCTION enroll_student_transactional(
@@ -108,7 +116,7 @@ EXCEPTION
   WHEN OTHERS THEN
     RETURN QUERY SELECT FALSE, 'Database error occurred'::TEXT;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public;
 
 -- Sample data for testing
 -- Password for all test users: "password123" (hashed with bcrypt)
