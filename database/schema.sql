@@ -79,10 +79,13 @@ CREATE OR REPLACE FUNCTION enroll_student_transactional(
 DECLARE
   v_enrolled_count INT;
   v_max_capacity INT;
+  v_course_id UUID;
+  v_existing_enrollment UUID;
+  v_existing_grade UUID;
 BEGIN
   -- Lock section row (prevents race conditions)
-  SELECT enrolled_count, max_capacity 
-  INTO v_enrolled_count, v_max_capacity
+  SELECT enrolled_count, max_capacity, course_id
+  INTO v_enrolled_count, v_max_capacity, v_course_id
   FROM sections
   WHERE id = p_section_id
   FOR UPDATE;
@@ -90,6 +93,30 @@ BEGIN
   -- Validate section exists
   IF NOT FOUND THEN
     RETURN QUERY SELECT FALSE, 'Section not found'::TEXT;
+    RETURN;
+  END IF;
+
+  -- Check if already enrolled in another section of the same course
+  SELECT e.id INTO v_existing_enrollment
+  FROM enrollments e
+  JOIN sections s ON e.section_id = s.id
+  WHERE e.student_id = p_student_id 
+    AND s.course_id = v_course_id;
+
+  IF FOUND THEN
+    RETURN QUERY SELECT FALSE, 'Already enrolled in another section of this course'::TEXT;
+    RETURN;
+  END IF;
+
+  -- Check if already has a grade for this course (completed before)
+  SELECT g.id INTO v_existing_grade
+  FROM grades g
+  JOIN sections s ON g.section_id = s.id
+  WHERE g.student_id = p_student_id 
+    AND s.course_id = v_course_id;
+
+  IF FOUND THEN
+    RETURN QUERY SELECT FALSE, 'Already completed this course'::TEXT;
     RETURN;
   END IF;
 

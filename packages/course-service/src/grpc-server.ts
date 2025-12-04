@@ -7,6 +7,7 @@ import {
   handleListSections,
   handleEnrollStudent,
   handleGetEnrollments,
+  handleGetFacultySections,
 } from './course-handler';
 
 const PROTO_PATH = path.resolve(__dirname, '../../proto/enrollment.proto');
@@ -33,6 +34,7 @@ function createServer(): grpc.Server {
     ListSections: handleListSections,
     EnrollStudent: handleEnrollStudent,
     GetEnrollments: handleGetEnrollments,
+    GetFacultySections: handleGetFacultySections,
   });
 
   return server;

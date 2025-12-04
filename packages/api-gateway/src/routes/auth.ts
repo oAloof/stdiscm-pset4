@@ -1,11 +1,11 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { authClient } from '../grpc-clients';
 import { createLogger } from '@pset4/shared-types';
 
 const router = Router();
 const logger = createLogger('auth-routes');
 
-router.post('/login', (req: Request, res: Response, next: import('express').NextFunction): void => {
+router.post('/login', (req: Request, res: Response, next: NextFunction): void => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -44,7 +44,7 @@ router.post('/login', (req: Request, res: Response, next: import('express').Next
   });
 });
 
-router.post('/logout', (req: Request, res: Response, next: import('express').NextFunction): void => {
+router.post('/logout', (req: Request, res: Response, next: NextFunction): void => {
   const { token } = req.body;
 
   if (!token) {

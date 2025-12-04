@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { gradeClient } from '../grpc-clients';
 import { authenticateJWT } from '../middleware/auth';
 import { createLogger } from '@pset4/shared-types';
@@ -7,7 +7,7 @@ const router = Router();
 const logger = createLogger('grade-routes');
 
 // GET /grades - Get student's grades
-router.get('/', authenticateJWT, (req: Request, res: Response, next: import('express').NextFunction): void => {
+router.get('/', authenticateJWT, (req: Request, res: Response, next: NextFunction): void => {
   const student_id = req.user!.userId;
 
   logger.info('Getting grades', { student_id });
@@ -22,7 +22,7 @@ router.get('/', authenticateJWT, (req: Request, res: Response, next: import('exp
 });
 
 // POST /grades - Upload grade (Faculty only)
-router.post('/', authenticateJWT, (req: Request, res: Response, next: import('express').NextFunction): void => {
+router.post('/', authenticateJWT, (req: Request, res: Response, next: NextFunction): void => {
   const { student_id, section_id, grade_value } = req.body;
   const faculty_id = req.user!.userId;
   const role = req.user!.role;
@@ -56,7 +56,7 @@ router.post('/', authenticateJWT, (req: Request, res: Response, next: import('ex
 });
 
 // GET /grades/section/:sectionId - Get section grades (Faculty only)
-router.get('/section/:sectionId', authenticateJWT, (req: Request, res: Response, next: import('express').NextFunction): void => {
+router.get('/section/:sectionId', authenticateJWT, (req: Request, res: Response, next: NextFunction): void => {
   const { sectionId } = req.params;
   const faculty_id = req.user!.userId;
   const role = req.user!.role;

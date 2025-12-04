@@ -33,6 +33,18 @@ interface EnrollmentWithDetails {
   } | null;
 }
 
+interface FacultySectionWithCourse {
+  id: string;
+  course_id: string;
+  section_code: string;
+  max_capacity: number;
+  enrolled_count: number;
+  course: {
+    code: string;
+    name: string;
+  } | null;
+}
+
 /**
  * Handles ListCourses requests by fetching all courses from database.
  * Supports optional pagination via limit and offset.
@@ -303,6 +315,79 @@ export async function handleGetEnrollments(call: any, callback: grpc.sendUnaryDa
     callback({
       code: grpc.status.INTERNAL,
       message: 'An error occurred while fetching enrollments',
+    });
+  }
+}
+
+/**
+ * Handles GetFacultySections requests by fetching sections taught by a faculty member.
+ */
+export async function handleGetFacultySections(call: any, callback: grpc.sendUnaryData<any>): Promise<void> {
+  const { faculty_id } = call.request;
+
+  logger.info('GetFacultySections request received', { faculty_id });
+
+  if (!faculty_id) {
+    logger.warn('GetFacultySections failed: Missing faculty_id');
+    callback({
+      code: grpc.status.INVALID_ARGUMENT,
+      message: 'faculty_id is required',
+    });
+    return;
+  }
+
+  try {
+    const supabase = createSupabaseClient();
+    const { data: sections, error } = await supabase
+      .from('sections')
+      .select(`
+        id,
+        course_id,
+        section_code,
+        max_capacity,
+        enrolled_count,
+        course:courses!course_id(code, name)
+      `)
+      .eq('faculty_id', faculty_id);
+
+    const typedSections = sections as FacultySectionWithCourse[] | null;
+
+    if (error) {
+      logger.error('Database error fetching faculty sections', {
+        error: error.message,
+        faculty_id
+      });
+      callback({
+        code: grpc.status.INTERNAL,
+        message: 'Failed to fetch faculty sections',
+      });
+      return;
+    }
+
+    logger.info('Faculty sections fetched successfully', {
+      count: typedSections?.length || 0,
+      faculty_id
+    });
+
+    callback(null, {
+      sections: typedSections?.map(section => ({
+        id: section.id,
+        course_id: section.course_id,
+        course_code: section.course?.code || '',
+        course_name: section.course?.name || '',
+        section_code: section.section_code,
+        max_capacity: section.max_capacity,
+        enrolled_count: section.enrolled_count,
+      })) || [],
+    });
+  } catch (error: any) {
+    logger.error('Unexpected error in GetFacultySections', {
+      error: error.message,
+      faculty_id
+    });
+    callback({
+      code: grpc.status.INTERNAL,
+      message: 'An error occurred while fetching faculty sections',
     });
   }
 }
