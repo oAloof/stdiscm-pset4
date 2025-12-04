@@ -7,7 +7,7 @@ const router = Router();
 const logger = createLogger('course-routes');
 
 // GET /courses - List all courses
-router.get('/', (req: Request, res: Response): void => {
+router.get('/', (req: Request, res: Response, next: import('express').NextFunction): void => {
   const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
   const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
 
@@ -15,9 +15,7 @@ router.get('/', (req: Request, res: Response): void => {
 
   courseClient.ListCourses({ limit, offset }, (error: any, response: any) => {
     if (error) {
-      logger.error('ListCourses gRPC error', { error: error.message });
-      res.status(500).json({ error: 'Internal server error' });
-      return;
+      return next(error);
     }
 
     res.json({ courses: response.courses });
@@ -25,7 +23,7 @@ router.get('/', (req: Request, res: Response): void => {
 });
 
 // GET /courses/sections/:courseId
-router.get('/sections/:courseId', (req: Request, res: Response): void => {
+router.get('/sections/:courseId', (req: Request, res: Response, next: import('express').NextFunction): void => {
   const { courseId } = req.params;
 
   if (!courseId) {
@@ -37,12 +35,7 @@ router.get('/sections/:courseId', (req: Request, res: Response): void => {
 
   courseClient.ListSections({ course_id: courseId }, (error: any, response: any) => {
     if (error) {
-      logger.error('ListSections gRPC error', {
-        error: error.message,
-        courseId
-      });
-      res.status(500).json({ error: 'Internal server error' });
-      return;
+      return next(error);
     }
 
     res.json({ sections: response.sections });
@@ -50,7 +43,7 @@ router.get('/sections/:courseId', (req: Request, res: Response): void => {
 });
 
 // POST /courses/enroll - Enroll student in section
-router.post('/enroll', authenticateJWT, (req: Request, res: Response): void => {
+router.post('/enroll', authenticateJWT, (req: Request, res: Response, next: import('express').NextFunction): void => {
   const { section_id } = req.body;
   const student_id = req.user!.userId;
 
@@ -63,13 +56,7 @@ router.post('/enroll', authenticateJWT, (req: Request, res: Response): void => {
 
   courseClient.EnrollStudent({ student_id, section_id }, (error: any, response: any) => {
     if (error) {
-      logger.error('EnrollStudent gRPC error', {
-        error: error.message,
-        student_id,
-        section_id
-      });
-      res.status(500).json({ error: 'Internal server error' });
-      return;
+      return next(error);
     }
 
     if (!response.success) {
@@ -95,19 +82,14 @@ router.post('/enroll', authenticateJWT, (req: Request, res: Response): void => {
 });
 
 // GET /courses/enrollments - Get student's enrollments
-router.get('/enrollments', authenticateJWT, (req: Request, res: Response): void => {
+router.get('/enrollments', authenticateJWT, (req: Request, res: Response, next: import('express').NextFunction): void => {
   const student_id = req.user!.userId;
 
   logger.info('Getting enrollments', { student_id });
 
   courseClient.GetEnrollments({ student_id }, (error: any, response: any) => {
     if (error) {
-      logger.error('GetEnrollments gRPC error', {
-        error: error.message,
-        student_id
-      });
-      res.status(500).json({ error: 'Internal server error' });
-      return;
+      return next(error);
     }
 
     res.json({ enrollments: response.enrollments });

@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { createLogger } from '@pset4/shared-types';
+import { mapGrpcToHttpStatus } from './utils/grpc-error-mapper';
 import authRoutes from './routes/auth';
 import courseRoutes from './routes/course';
 import gradeRoutes from './routes/grade';
@@ -51,7 +52,27 @@ app.use('/courses', courseRoutes);
 app.use('/grades', gradeRoutes);
 
 // Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  // Check if it's a gRPC error
+  if (err.code !== undefined && typeof err.code === 'number') {
+    const { status, message } = mapGrpcToHttpStatus(err.code);
+
+    logger.error('gRPC Error', {
+      code: err.code,
+      details: err.details || err.message,
+      path: req.path,
+      method: req.method,
+      mappedStatus: status
+    });
+
+    res.status(status).json({
+      error: message,
+      message: err.details || err.message,
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
+
   logger.error('Unhandled error', {
     error: err.message,
     stack: err.stack,

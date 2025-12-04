@@ -7,19 +7,14 @@ const router = Router();
 const logger = createLogger('grade-routes');
 
 // GET /grades - Get student's grades
-router.get('/', authenticateJWT, (req: Request, res: Response): void => {
+router.get('/', authenticateJWT, (req: Request, res: Response, next: import('express').NextFunction): void => {
   const student_id = req.user!.userId;
 
   logger.info('Getting grades', { student_id });
 
   gradeClient.GetGrades({ student_id }, (error: any, response: any) => {
     if (error) {
-      logger.error('GetGrades gRPC error', {
-        error: error.message,
-        student_id
-      });
-      res.status(500).json({ error: 'Internal server error' });
-      return;
+      return next(error);
     }
 
     res.json({ grades: response.grades });
@@ -27,7 +22,7 @@ router.get('/', authenticateJWT, (req: Request, res: Response): void => {
 });
 
 // POST /grades - Upload grade (Faculty only)
-router.post('/', authenticateJWT, (req: Request, res: Response): void => {
+router.post('/', authenticateJWT, (req: Request, res: Response, next: import('express').NextFunction): void => {
   const { student_id, section_id, grade_value } = req.body;
   const faculty_id = req.user!.userId;
   const role = req.user!.role;
@@ -47,13 +42,7 @@ router.post('/', authenticateJWT, (req: Request, res: Response): void => {
 
   gradeClient.UploadGrade({ student_id, section_id, grade_value, faculty_id }, (error: any, response: any) => {
     if (error) {
-      logger.error('UploadGrade gRPC error', {
-        error: error.message,
-        faculty_id,
-        section_id
-      });
-      res.status(500).json({ error: 'Internal server error' });
-      return;
+      return next(error);
     }
 
     if (!response.success) {
@@ -67,7 +56,7 @@ router.post('/', authenticateJWT, (req: Request, res: Response): void => {
 });
 
 // GET /grades/section/:sectionId - Get section grades (Faculty only)
-router.get('/section/:sectionId', authenticateJWT, (req: Request, res: Response): void => {
+router.get('/section/:sectionId', authenticateJWT, (req: Request, res: Response, next: import('express').NextFunction): void => {
   const { sectionId } = req.params;
   const faculty_id = req.user!.userId;
   const role = req.user!.role;
@@ -87,20 +76,7 @@ router.get('/section/:sectionId', authenticateJWT, (req: Request, res: Response)
 
   gradeClient.GetSectionGrades({ section_id: sectionId, faculty_id }, (error: any, response: any) => {
     if (error) {
-      // Check for PERMISSION_DENIED
-      if (error.code === 7) {
-        logger.warn('Unauthorized section access', { faculty_id, sectionId });
-        res.status(403).json({ error: 'You are not authorized to view grades for this section' });
-        return;
-      }
-
-      logger.error('GetSectionGrades gRPC error', {
-        error: error.message,
-        faculty_id,
-        sectionId
-      });
-      res.status(500).json({ error: 'Internal server error' });
-      return;
+      return next(error);
     }
 
     res.json({ grades: response.grades });

@@ -5,7 +5,7 @@ import { createLogger } from '@pset4/shared-types';
 const router = Router();
 const logger = createLogger('auth-routes');
 
-router.post('/login', (req: Request, res: Response): void => {
+router.post('/login', (req: Request, res: Response, next: import('express').NextFunction): void => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -17,12 +17,7 @@ router.post('/login', (req: Request, res: Response): void => {
 
   authClient.Login({ email, password }, (error: any, response: any) => {
     if (error) {
-      logger.error('Login gRPC error', {
-        error: error.message,
-        email
-      });
-      res.status(500).json({ error: 'Internal server error' });
-      return;
+      return next(error);
     }
 
     if (!response.success) {
@@ -49,7 +44,7 @@ router.post('/login', (req: Request, res: Response): void => {
   });
 });
 
-router.post('/logout', (req: Request, res: Response): void => {
+router.post('/logout', (req: Request, res: Response, next: import('express').NextFunction): void => {
   const { token } = req.body;
 
   if (!token) {
@@ -61,9 +56,7 @@ router.post('/logout', (req: Request, res: Response): void => {
 
   authClient.Logout({ token }, (error: any, response: any) => {
     if (error) {
-      logger.error('Logout gRPC error', { error: error.message });
-      res.status(500).json({ error: 'Internal server error' });
-      return;
+      return next(error);
     }
 
     logger.info('Logout successful');
