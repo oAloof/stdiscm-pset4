@@ -5,6 +5,7 @@ import path from 'path';
 import { createLogger } from '@pset4/shared-types';
 import authRoutes from './routes/auth';
 import courseRoutes from './routes/course';
+import gradeRoutes from './routes/grade';
 
 // Load .env from root directory for local development
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
@@ -47,6 +48,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 app.use('/auth', authRoutes);
 app.use('/courses', courseRoutes);
+app.use('/grades', gradeRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
