@@ -8,19 +8,19 @@ This system implements a distributed architecture with 5 separate nodes:
 
 ```
 ┌─────────────┐       ┌─────────────┐       ┌──────────────┐
-│  Frontend   │──────→│ API Gateway │──────→│ Auth Service │
-│ (React/TS)  │       │  (REST API) │   │   │ (gRPC:50051) │
-│   :3000     │       │    :4000    │   │   └──────────────┘
-└─────────────┘       └─────────────┘   │
-                                        │   ┌──────────────┐
-                                        ├──→│Course Service│
-                                        │   │ (gRPC:50052) │
-                                        │   └──────────────┘
-                                        │
-                                        │   ┌──────────────┐
-                                        └──→│Grade Service │
-                                            │ (gRPC:50053) │
-                                            └──────────────┘
+│  Frontend   │──────→│ API Gateway │──────→│ Auth Service │──────┐
+│ (React/TS)  │       │  (REST API) │   │   │ (gRPC:50051) │      │
+│   :3000     │       │    :4000    │   │   └──────────────┘      │
+└─────────────┘       └─────────────┘   │                         │
+                                        │   ┌──────────────┐      │
+                                        ├──→│Course Service│──────┤
+                                        │   │ (gRPC:50052) │      │
+                                        │   └──────────────┘      │
+                                        │                         ▼
+                                        │   ┌──────────────┐   ┌──────────────┐
+                                        └──→│Grade Service │──→│   Supabase   │
+                                            │ (gRPC:50053) │   │ (PostgreSQL) │
+                                            └──────────────┘   └──────────────┘
 ```
 
 ### Network Configuration
@@ -136,3 +136,24 @@ The system uses Supabase PostgreSQL with the following tables:
 - **Authentication**: JWT
 - **Deployment**: Docker + Docker Compose
 - **Communication**: gRPC (services), REST (frontend↔gateway)
+
+## Database Redundancy
+
+This system is designed to support database redundancy via **Supabase Read Replicas**. With a Pro plan or higher, you can:
+
+1. **Deploy Read Replicas** in multiple regions for data redundancy
+2. **Load balance** read queries across replicas while writes go to the primary
+3. **Reduce latency** by placing replicas closer to users
+
+### Enabling Read Replicas (Pro Plan Required)
+
+1. Go to Supabase Dashboard → **Settings** → **Infrastructure**
+2. Click **Deploy Read Replica**
+3. Select your preferred region(s)
+
+
+### Current Configuration
+
+- **Primary Database**: Single Supabase PostgreSQL instance
+- **Backups**: Automatic daily backups (included in free tier)
+- **Point-in-Time Recovery**: Available on Pro plan
