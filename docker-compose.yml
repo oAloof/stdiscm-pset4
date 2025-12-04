@@ -44,6 +44,7 @@ services:
       - FRONTEND_URL=http://172.20.0.10:3000
       - API_GATEWAY_PORT=4000
       - JWT_SECRET=${JWT_SECRET}
+      - PROTO_DIR=/app/packages/proto
       - NODE_ENV=production
     depends_on:
       - auth-service
@@ -67,6 +68,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
       - GRPC_PORT=50051
+      - PROTO_DIR=/app/packages/proto
       - NODE_ENV=production
 
   course-service:
@@ -84,6 +86,7 @@ services:
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - GRPC_PORT=50052
+      - PROTO_DIR=/app/packages/proto
       - NODE_ENV=production
 
   grade-service:
@@ -101,4 +104,5 @@ services:
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - GRPC_PORT=50053
+      - PROTO_DIR=/app/packages/proto
       - NODE_ENV=production

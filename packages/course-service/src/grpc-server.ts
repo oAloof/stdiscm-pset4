@@ -10,7 +10,8 @@ import {
   handleGetFacultySections,
 } from './course-handler';
 
-const PROTO_PATH = path.resolve(__dirname, '../../proto/enrollment.proto');
+const PROTO_DIR = process.env.PROTO_DIR || path.resolve(__dirname, '../../proto');
+const PROTO_PATH = path.join(PROTO_DIR, 'enrollment.proto');
 const logger = createLogger('course-service');
 
 function loadProtoDefinition() {

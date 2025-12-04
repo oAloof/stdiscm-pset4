@@ -25,6 +25,7 @@ COPY --from=builder /app/packages/auth-service/dist ./dist
 COPY --from=builder /app/packages/auth-service/package*.json ./
 COPY --from=builder /app/packages/proto /app/packages/proto
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/shared-types ./packages/shared-types
 
 ENV NODE_ENV=production
 
