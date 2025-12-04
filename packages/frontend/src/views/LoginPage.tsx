@@ -26,7 +26,7 @@ export default function LoginPage() {
         if (data.user.role === "STUDENT") {
           navigate("/courses");
         } else if (data.user.role === "FACULTY") {
-          navigate("/courses");
+          navigate("/faculty");
         } else {
           navigate("/login");
         }

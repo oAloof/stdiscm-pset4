@@ -16,7 +16,7 @@ const NavBar: React.FC = () => {
   // Define sidebar items by role
   const menuItems: Record<string, { label: string; link: string }[]> = {
     FACULTY: [
-      { label: "View Courses", link: "/courses" },
+      { label: "My Sections", link: "faculty/sections" }
     ],
     STUDENT: [
       { label: "View Courses", link: "/courses" },

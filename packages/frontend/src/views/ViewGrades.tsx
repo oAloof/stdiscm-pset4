@@ -12,7 +12,7 @@ export default function ViewGrades() {
         console.log("Grades:", data);
         setGrades(data.grades || []);
       } catch (error) {
-        console.error("Failed to fetch grades:", error);
+        console.error("Failed to fetch enrollments:", error);
       }
     };
 
