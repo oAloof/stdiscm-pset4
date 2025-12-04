@@ -3,10 +3,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import LoginPage from './views/LoginPage';
 import Courses from './views/Courses';
-import FacultyPage from './views/FacultyPage';
 import Sections from "./views/Sections";
 import Enrollments from "./views/Enrollments";
 import ViewGrades from "./views/ViewGrades";
+import EditGrades from "./views/EditGrades";
 
 function App() {
   return (
@@ -20,7 +20,7 @@ function App() {
         <Route
           path="/courses"
           element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <ProtectedRoute>
               <Courses />
             </ProtectedRoute>
           }
@@ -29,7 +29,7 @@ function App() {
         <Route
           path="/courses/sections/:courseId"
           element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <ProtectedRoute>
               <Sections />
             </ProtectedRoute>
           }
@@ -53,12 +53,12 @@ function App() {
           }
         />
 
-        {/* Protected Faculty Route */}
+        Protected Faculty Route
         <Route
-          path="/faculty"
+          path="/faculty/grades/:sectionId"
           element={
             <ProtectedRoute allowedRoles={["FACULTY"]}>
-              <FacultyPage />
+              <EditGrades />
             </ProtectedRoute>
           }
         />

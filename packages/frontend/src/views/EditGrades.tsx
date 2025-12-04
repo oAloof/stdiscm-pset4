@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { api } from "../api/client";
 import NavBar from "../components/NavBar";
 
-export default function ViewGrades() {
-  const [grades, setGrades] = useState([]);
+export default function EditGrades() {
+    const { sectionId } = useParams<{ sectionId: string }>();
+    const [grades, setGrades] = useState([]);
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await api.getGrades(); // make sure this returns all enrollments
-        console.log("Grades:", data);
+        const data = await api.getSectionGrades(sectionId!); // make sure this returns all enrollments
+        console.log("SectionGrades:", data);
         setGrades(data.grades || []);
       } catch (error) {
         console.error("Failed to fetch grades:", error);
@@ -26,7 +28,7 @@ export default function ViewGrades() {
       <h1 className="text-2xl font-bold"></h1>
   
       {grades.length === 0 ? (
-        <p className="text-gray-600 mt-20 mb-5">You have not been graded yet.</p>
+        <p className="text-gray-600 mt-20 mb-5">You have not given any grades yet.</p>
       ) : (
         <div>
         <h1 className="text-2xl font-bold mt-20 mb-5">Grades</h1>
@@ -34,16 +36,14 @@ export default function ViewGrades() {
           <table className="table w-full">
             <thead>
               <tr>
-                <th>Course Code</th>
-                <th>Course Name</th>
+                <th>Student Name</th>
                 <th>Grade</th>
               </tr>
             </thead>
             <tbody>
               {grades.map((g, idx) => (
                 <tr key={idx}>
-                  <td>{g.course_code}</td>
-                  <td>{g.course_name}</td>
+                  <td>{g.student_name}</td>
                   <td>{g.grade_value}</td>
                 </tr>
               ))}
