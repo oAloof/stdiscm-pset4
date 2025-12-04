@@ -65,7 +65,7 @@ async function seedData() {
         section_code: 'S11',
         faculty_id: getFacultyId(sectionCount++),
         max_capacity: 40,
-        enrolled_count: 0
+        enrolled_count: 1
       });
       // Section 2
       sectionsToCreate.push({
@@ -73,7 +73,7 @@ async function seedData() {
         section_code: 'S12',
         faculty_id: getFacultyId(sectionCount++),
         max_capacity: 40,
-        enrolled_count: 0
+        enrolled_count: 40
       });
     }
 
