@@ -81,6 +81,18 @@ export const api = {
     return response.json(); // { success, message }
   },
 
+  getFacultySections: async () => {
+    const token = localStorage.getItem("token");
+  
+    const response = await fetch(`${API_BASE_URL}/courses/faculty/sections`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+  
+    return response.json(); // { sections: [...] }
+  },  
+
   getEnrollments: async () => {
     const token = localStorage.getItem("token");
 

@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   // Check role access
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     if (user.role === "STUDENT") return <Navigate to="/courses" replace />;
-    if (user.role === "FACULTY") return <Navigate to="/faculty" replace />;
+    if (user.role === "FACULTY") return <Navigate to="/faculty/sections" replace />;
     
     // Fallback for unexpected roles
     return <Navigate to="/login" replace />;
