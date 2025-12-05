@@ -461,14 +461,13 @@ export async function handleGetSectionStudents(
       });
     }
 
-    // Fetch all enrolled students with grade information
+    // Fetch all enrolled students
     const { data: enrollments, error: enrollError } = await supabase
       .from('enrollments')
       .select(`
         student_id,
         enrolled_at,
-        users!inner(name, email),
-        grades(grade_value, uploaded_at)
+        users!inner(name, email)
       `)
       .eq('section_id', section_id);
 
@@ -483,22 +482,49 @@ export async function handleGetSectionStudents(
       });
     }
 
-    const typedEnrollments = enrollments as EnrollmentWithStudentAndGrade[] | null;
+    // Fetch all grades for this section
+    const { data: grades, error: gradesError } = await supabase
+      .from('grades')
+      .select('student_id, grade_value, uploaded_at')
+      .eq('section_id', section_id);
+
+    if (gradesError) {
+      logger.error('Database error fetching grades', {
+        error: gradesError.message,
+        section_id
+      });
+      // Don't fail, grades are optional
+    }
+
+    // Create a map of student grades for quick lookup
+    const gradeMap = new Map();
+    if (grades) {
+      grades.forEach((grade: any) => {
+        gradeMap.set(grade.student_id, {
+          grade_value: grade.grade_value,
+          uploaded_at: grade.uploaded_at
+        });
+      });
+    }
 
     logger.info('Section students fetched successfully', {
-      count: typedEnrollments?.length || 0,
+      count: enrollments?.length || 0,
+      with_grades: gradeMap.size,
       section_id
     });
 
     callback(null, {
-      students: typedEnrollments?.map(enrollment => ({
-        student_id: enrollment.student_id,
-        name: enrollment.users?.name || '',
-        email: enrollment.users?.email || '',
-        enrolled_at: enrollment.enrolled_at,
-        grade_value: enrollment.grades?.grade_value || null,
-        grade_uploaded_at: enrollment.grades?.uploaded_at || null,
-      })) || [],
+      students: enrollments?.map((enrollment: any) => {
+        const grade = gradeMap.get(enrollment.student_id);
+        return {
+          student_id: enrollment.student_id,
+          name: enrollment.users?.name || '',
+          email: enrollment.users?.email || '',
+          enrolled_at: enrollment.enrolled_at,
+          grade_value: grade?.grade_value ?? null,
+          grade_uploaded_at: grade?.uploaded_at ?? null,
+        };
+      }) || [],
     });
   } catch (error: any) {
     logger.error('Unexpected error in GetSectionStudents', {
