@@ -4,6 +4,7 @@ import NavBar from "../components/NavBar";
 
 export default function ViewGrades() {
   const [grades, setGrades] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -13,6 +14,8 @@ export default function ViewGrades() {
         setGrades(data.grades || []);
       } catch (error) {
         console.error("Failed to fetch enrollments:", error);
+      } finally{
+        setLoading(false); // hide loader
       }
     };
 
@@ -25,7 +28,13 @@ export default function ViewGrades() {
   
       <h1 className="text-2xl font-bold"></h1>
   
-      {grades.length === 0 ? (
+      {loading ? (
+      <div className="flex flex-col items-center mt-20">
+        <span className="loading loading-spinner loading-lg"></span>
+        <p className="mt-4 text-gray-600">Loading grades...</p>
+      </div>
+      ) : (
+      grades.length === 0 ? (
         <p className="text-gray-600 mt-20 mb-5">You have not been graded yet.</p>
       ) : (
         <div>
@@ -51,6 +60,7 @@ export default function ViewGrades() {
           </table>
         </div>
         </div>
+      )
       )}
     </div>
   );

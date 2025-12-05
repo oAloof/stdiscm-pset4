@@ -15,22 +15,28 @@ export default function SectionsPage() {
   const [enrolledSectionId, setEnrolledSectionId] = useState<string | null>(null);
   const [courseEnrollmentSectionId, setCourseEnrollmentSectionId] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
 
   // Fetch sections and enrollments on load
   useEffect(() => {
     const fetchData = async () => {
-      const sectionsData = await api.getSections(courseId!);
-      console.log("Sections:", sectionsData);
-      setSections(sectionsData.sections);
+      try{
+        const sectionsData = await api.getSections(courseId!);
+        console.log("Sections:", sectionsData);
+        setSections(sectionsData.sections);
 
-      const enrollmentsData = await api.getEnrollments();
-      console.log("Students Enrollments:", enrollmentsData);
-      const enrollmentInThisCourse = enrollmentsData.enrollments.find(
-        (e: any) => e.course_id === courseId
-      );
-      setCourseEnrollmentSectionId(enrollmentInThisCourse?.section_id || null);
-      setEnrolledSectionId(enrollmentInThisCourse?.section_id || null);
+        const enrollmentsData = await api.getEnrollments();
+        console.log("Students Enrollments:", enrollmentsData);
+        const enrollmentInThisCourse = enrollmentsData.enrollments.find(
+          (e: any) => e.course_id === courseId
+        );
+        setCourseEnrollmentSectionId(enrollmentInThisCourse?.section_id || null);
+        setEnrolledSectionId(enrollmentInThisCourse?.section_id || null);
+        }finally {
+          setLoading(false); // hide loader
+        }
     };
 
     fetchData();
@@ -57,56 +63,67 @@ export default function SectionsPage() {
   return (
     <div className="min-h-screen flex flex-col items-center bg-primary-100 p-4">
       <NavBar />
-      <h1 className="text-2xl font-bold mt-20 mb-5">Sections for {courseCode}</h1>
-
-      {sections.map((s) => {
-        // Determine button state
-        let btnText = "Enroll";
-        let btnDisabled = false;
-
-        if (enrolledSectionId === s.id) {
-          btnText = "Enrolled";
-          btnDisabled = true;
-        } else if (courseEnrollmentSectionId && courseEnrollmentSectionId !== s.id) {
-          btnText = "Already in Course";
-          btnDisabled = true;
-        } else if (s.enrolled_count >= s.max_capacity) {
-          btnText = "Full";
-          btnDisabled = true;
-        }
-
-        return (
-          <div
-            key={s.id}
-            className="card card-border bg-base-100 w-full max-w-screen-sm mx-4 my-2"
-          >
-            <div className="card-body">
-              <h2 className="card-title">
-                [{s.section_code}] {s.faculty_name}
-              </h2>
-
-              <div className="flex justify-between items-center mt-2">
-                <p className="text-lg text-gray-500 font-semibold">
-                  {s.enrolled_count}/{s.max_capacity}
-                </p>
-                <button
-                  className="btn btn-primary"
-                  disabled={btnDisabled}
-                  onClick={() => handleEnroll(s.id)}
-                >
-                  {btnText}
-                </button>
+      
+      {loading ? (
+        <div className="flex flex-col items-center mt-20">
+          <span className="loading loading-spinner loading-lg"></span>
+          <p className="mt-4 text-gray-600">Loading sections...</p>
+        </div>
+      ) : (
+        <>
+          <h1 className="text-2xl font-bold mt-20 mb-5">Sections for {courseCode}</h1>
+          {sections.map((s) => {
+            // Determine button state
+            let btnText = "Enroll";
+            let btnDisabled = false;
+  
+            if (enrolledSectionId === s.id) {
+              btnText = "Enrolled";
+              btnDisabled = true;
+            } else if (courseEnrollmentSectionId && courseEnrollmentSectionId !== s.id) {
+              btnText = "Already in Course";
+              btnDisabled = true;
+            } else if (s.enrolled_count >= s.max_capacity) {
+              btnText = "Full";
+              btnDisabled = true;
+            }
+  
+            return (
+              <div
+                key={s.id}
+                className="card card-border bg-base-100 w-full max-w-screen-sm mx-4 my-2"
+              >
+                <div className="card-body">
+                  <h2 className="card-title">
+                    [{s.section_code}] {s.faculty_name}
+                  </h2>
+  
+                  <div className="flex justify-between items-center mt-2">
+                    <p className="text-lg text-gray-500 font-semibold">
+                      {s.enrolled_count}/{s.max_capacity}
+                    </p>
+                    <button
+                      className="btn btn-primary"
+                      disabled={btnDisabled}
+                      onClick={() => handleEnroll(s.id)}
+                    >
+                      {btnText}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        );
-      })}
+            );
+          })}
+        </>
+      )}
+  
       <button
         className="btn btn-secondary mt-4"
-        onClick={() => navigate(-1)} // goes back to previous page
+        onClick={() => navigate(-1)}
       >
         Back
       </button>
     </div>
   );
+  
 }

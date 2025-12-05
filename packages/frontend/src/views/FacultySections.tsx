@@ -5,15 +5,20 @@ import NavBar from "../components/NavBar";
 
 export default function SectionsPage() {
   const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
   // Fetch faculty sections
   useEffect(() => {
     const fetchData = async () => {
-      const sectionsData = await api.getFacultySections();
-      console.log("Faculty Sections:", sectionsData);
-      setSections(sectionsData.sections);
+    try{
+        const sectionsData = await api.getFacultySections();
+        console.log("Faculty Sections:", sectionsData);
+        setSections(sectionsData.sections);
+    }finally {
+        setLoading(false); // hide loader
+      }
     };
 
     fetchData();
@@ -24,8 +29,13 @@ export default function SectionsPage() {
       <NavBar />
       <h1 className="text-2xl font-bold mt-20 mb-5"></h1>
 
-      {sections.map((s: any) => {
-        return (
+      {loading ? (
+        <div className="flex flex-col items-center mt-20">
+          <span className="loading loading-spinner loading-lg"></span>
+          <p className="mt-4 text-gray-600">Loading sections...</p>
+        </div>
+      ) : (
+        sections.map((s: any) => (
           <div
             key={s.id}
             className="card card-border bg-base-100 w-full max-w-screen-sm mx-4 my-2"
@@ -40,14 +50,11 @@ export default function SectionsPage() {
                   {s.enrolled_count}/{s.max_capacity}
                 </p>
 
-                {/* FACULTY BUTTON → View Grades */}
                 <button
                   className="btn btn-primary"
                   onClick={() =>
                     navigate("/faculty/grades/" + s.id, {
-                      state: {
-                        sectionCode: s.section_code,
-                      },
+                      state: { sectionCode: s.section_code },
                     })
                   }
                 >
@@ -56,8 +63,8 @@ export default function SectionsPage() {
               </div>
             </div>
           </div>
-        );
-      })}
+        ))
+      )}
     </div>
   );
 }
