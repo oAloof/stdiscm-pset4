@@ -10,7 +10,8 @@
     "build": "npm run build --workspaces --if-present",
     "dev": "npm run dev --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "seed": "ts-node database/seed-data.ts"
   },
   "keywords": [
     "distributed-systems",
