@@ -148,5 +148,17 @@ getSectionGrades: async (sectionId: string) => {
 
   return response.json(); // { grades: [...] }
 },
-    
+
+getSectionStudents: async (sectionId: string) => {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch(`${API_BASE_URL}/courses/faculty/sections/${sectionId}/students`, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+
+  return response.json(); // { students: [...] }
+},
+
 };

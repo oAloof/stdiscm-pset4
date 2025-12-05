@@ -118,5 +118,28 @@ router.get('/enrollments', authenticateJWT, (req: Request, res: Response, next: 
   });
 });
 
+// GET /courses/faculty/sections/:sectionId/students
+router.get(
+  '/faculty/sections/:sectionId/students',
+  authenticateJWT,
+  (req: Request, res: Response, next: NextFunction) => {
+    const faculty_id = req.user!.userId;
+    const role = req.user!.role;
+    const { sectionId } = req.params;
+
+    if (role !== 'FACULTY') {
+      return res.status(403).json({ error: 'Faculty access required' });
+    }
+
+    courseClient.GetSectionStudents({ section_id: sectionId, faculty_id }, (error: any, response: any) => {
+      if (error) return next(error);
+      res.json({ students: response.students });
+    });
+  }
+);
+
+
+
+
 export default router;
 
