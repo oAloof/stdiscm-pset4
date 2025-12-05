@@ -45,6 +45,25 @@ interface FacultySectionWithCourse {
   } | null;
 }
 
+interface SectionInfo {
+  id: string;
+  faculty_id: string;
+}
+
+interface EnrollmentWithStudentAndGrade {
+  student_id: string;
+  enrolled_at: string;
+  users: {
+    name: string;
+    email: string;
+  } | null;
+  grades: {
+    grade_value: number;
+    uploaded_at: string;
+  } | null;
+}
+
+
 /**
  * Handles ListCourses requests by fetching all courses from database.
  * Supports optional pagination via limit and offset.
@@ -388,6 +407,108 @@ export async function handleGetFacultySections(call: any, callback: grpc.sendUna
     callback({
       code: grpc.status.INTERNAL,
       message: 'An error occurred while fetching faculty sections',
+    });
+  }
+}
+
+/**
+ * Handles GetSectionStudents requests by fetching all enrolled students in a section.
+ */
+export async function handleGetSectionStudents(
+  call: any,
+  callback: grpc.sendUnaryData<any>
+): Promise<void> {
+  const { section_id, faculty_id } = call.request;
+
+  logger.info('GetSectionStudents request received', { section_id, faculty_id });
+
+  if (!section_id || !faculty_id) {
+    logger.warn('GetSectionStudents failed: Missing parameters');
+    return callback({
+      code: grpc.status.INVALID_ARGUMENT,
+      message: 'section_id and faculty_id are required',
+    });
+  }
+
+  try {
+    const supabase = createSupabaseClient();
+
+    // Verify section exists and belongs to faculty
+    const { data: section, error: sectionError } = await supabase
+      .from('sections')
+      .select('id, faculty_id')
+      .eq('id', section_id)
+      .single();
+
+    const typedSection = section as SectionInfo | null;
+
+    if (sectionError || !typedSection) {
+      logger.error('Section not found', { error: sectionError?.message, section_id });
+      return callback({
+        code: grpc.status.NOT_FOUND,
+        message: 'Section does not exist',
+      });
+    }
+
+    if (typedSection.faculty_id !== faculty_id) {
+      logger.warn('Unauthorized section access attempt', {
+        faculty_id,
+        section_owner: typedSection.faculty_id
+      });
+      return callback({
+        code: grpc.status.PERMISSION_DENIED,
+        message: 'You are not authorized to view students for this section',
+      });
+    }
+
+    // Fetch all enrolled students with grade information
+    const { data: enrollments, error: enrollError } = await supabase
+      .from('enrollments')
+      .select(`
+        student_id,
+        enrolled_at,
+        users!inner(name, email),
+        grades(grade_value, uploaded_at)
+      `)
+      .eq('section_id', section_id);
+
+    if (enrollError) {
+      logger.error('Database error fetching section students', {
+        error: enrollError.message,
+        section_id
+      });
+      return callback({
+        code: grpc.status.INTERNAL,
+        message: 'Failed to fetch section students',
+      });
+    }
+
+    const typedEnrollments = enrollments as EnrollmentWithStudentAndGrade[] | null;
+
+    logger.info('Section students fetched successfully', {
+      count: typedEnrollments?.length || 0,
+      section_id
+    });
+
+    callback(null, {
+      students: typedEnrollments?.map(enrollment => ({
+        student_id: enrollment.student_id,
+        name: enrollment.users?.name || '',
+        email: enrollment.users?.email || '',
+        enrolled_at: enrollment.enrolled_at,
+        grade_value: enrollment.grades?.grade_value || null,
+        grade_uploaded_at: enrollment.grades?.uploaded_at || null,
+      })) || [],
+    });
+  } catch (error: any) {
+    logger.error('Unexpected error in GetSectionStudents', {
+      error: error.message,
+      section_id,
+      faculty_id
+    });
+    callback({
+      code: grpc.status.INTERNAL,
+      message: 'An error occurred while fetching section students',
     });
   }
 }

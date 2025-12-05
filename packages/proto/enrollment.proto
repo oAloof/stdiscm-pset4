@@ -49,6 +49,8 @@ service CourseService {
   rpc GetEnrollments(GetEnrollmentsRequest) returns (GetEnrollmentsResponse);
   rpc GetFacultySections(GetFacultySectionsRequest)
       returns (GetFacultySectionsResponse);
+  rpc GetSectionStudents(GetSectionStudentsRequest)
+      returns (GetSectionStudentsResponse);
 }
 
 message ListCoursesRequest {
@@ -88,6 +90,22 @@ message FacultySection {
   string section_code = 5;
   int32 max_capacity = 6;
   int32 enrolled_count = 7;
+}
+
+message GetSectionStudentsRequest {
+  string section_id = 1;
+  string faculty_id = 2;
+}
+
+message GetSectionStudentsResponse { repeated SectionStudent students = 1; }
+
+message SectionStudent {
+  string student_id = 1;
+  string name = 2;
+  string email = 3;
+  string enrolled_at = 4;
+  optional double grade_value = 5;
+  optional string grade_uploaded_at = 6;
 }
 
 // ============================================================================

@@ -8,6 +8,7 @@ import {
   handleEnrollStudent,
   handleGetEnrollments,
   handleGetFacultySections,
+  handleGetSectionStudents,
 } from './course-handler';
 
 const PROTO_DIR = process.env.PROTO_DIR || path.resolve(__dirname, '../../proto');
@@ -36,6 +37,7 @@ function createServer(): grpc.Server {
     EnrollStudent: handleEnrollStudent,
     GetEnrollments: handleGetEnrollments,
     GetFacultySections: handleGetFacultySections,
+    GetSectionStudents: handleGetSectionStudents,
   });
 
   return server;

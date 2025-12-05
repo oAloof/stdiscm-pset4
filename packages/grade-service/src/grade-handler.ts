@@ -29,11 +29,6 @@ interface SectionInfo {
   course_id?: string;
 }
 
-interface StudentInfo {
-  student_id: string;
-  name: string;
-}
-
 
 /**
  * Handles GetGrades requests - students view their grades across all enrolled sections.
@@ -332,72 +327,3 @@ export async function handleGetSectionGrades(call: any, callback: grpc.sendUnary
     });
   }
 }
-
-export async function handleGetSectionStudents(
-  call: any,
-  callback: grpc.sendUnaryData<any>
-): Promise<void> {
-  const { section_id, faculty_id } = call.request;
-
-  logger.info('GetSectionStudents request received', { section_id, faculty_id });
-
-  if (!section_id || !faculty_id) {
-    return callback({
-      code: grpc.status.INVALID_ARGUMENT,
-      message: 'section_id and faculty_id are required',
-    });
-  }
-
-  try {
-    const supabase = createSupabaseClient();
-
-    // Verify section exists and belongs to faculty
-    const { data: section, error: sectionError } = await supabase
-      .from('sections')
-      .select('id, faculty_id')
-      .eq('id', section_id)
-      .single();
-
-    const typedSection = section as SectionInfo | null;
-
-    if (sectionError || !typedSection) {
-      return callback({
-        code: grpc.status.NOT_FOUND,
-        message: 'Section does not exist',
-      });
-    }
-
-    if (typedSection.faculty_id !== faculty_id) {
-      return callback({
-        code: grpc.status.PERMISSION_DENIED,
-        message: 'You are not authorized to view students for this section',
-      });
-    }
-
-    // Fetch all enrolled student IDs with names
-    const { data: enrollments, error: enrollError } = await supabase
-      .from('enrollments')
-      .select('student_id, users!inner(name)')
-      .eq('section_id', section_id);
-
-    if (enrollError) {
-      return callback({
-        code: grpc.status.INTERNAL,
-        message: enrollError.message,
-      });
-    }
-    
-    const students: StudentInfo[] = (enrollments || []).map((e: any) => ({
-      student_id: e.student_id,
-      name: e.users.name,
-    }));
-
-    callback(null, { students });
-  } catch (error: any) {
-    callback({
-      code: grpc.status.INTERNAL,
-      message: error.message,
-    });
-  }
-}
-
