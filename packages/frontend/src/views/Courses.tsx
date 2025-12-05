@@ -5,15 +5,20 @@ import NavBar from "../components/NavBar";
 
 export default function Courses() {
   const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await api.getCourses();
-      console.log("Courses:", data);
-      setCourses(data.courses); 
+      try {
+        const data = await api.getCourses();
+        console.log("Courses:", data);
+        setCourses(data.courses);
+      } finally {
+        setLoading(false); // hide loader
+      }
     };
-
+  
     fetchData();
   }, []);
 
@@ -28,7 +33,13 @@ export default function Courses() {
       <NavBar />
       <h1 className="text-2xl font-bold my-4">ViewCourses</h1>
 
-      {courses.map((c) => (
+      {loading ? (
+      <div className="flex flex-col items-center mt-20">
+        <span className="loading loading-spinner loading-lg"></span>
+        <p className="mt-4 text-gray-600">Loading courses...</p>
+      </div>
+    ) : (
+      courses.map((c) => (
         <div key={c.id} className="card card-border bg-base-100 w-full max-w-screen-sm mx-4 my-2">
           <div className="card-body">
             <h2 className="card-title">[{c.code}] {c.name}</h2>
@@ -43,7 +54,8 @@ export default function Courses() {
             </div>
           </div>
         </div>
-      ))}
+      ))
+    )}
     </div>
   );
 }
