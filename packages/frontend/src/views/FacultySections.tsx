@@ -50,16 +50,18 @@ export default function SectionsPage() {
                   {s.enrolled_count}/{s.max_capacity}
                 </p>
 
+                <div>
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-primary ml-3"
                   onClick={() =>
-                    navigate("/faculty/grades/" + s.id, {
+                    navigate("/faculty/students/" + s.id, {
                       state: { sectionCode: s.section_code },
                     })
                   }
                 >
-                  View Grades
+                  Upload Grades
                 </button>
+                </div>
               </div>
             </div>
           </div>

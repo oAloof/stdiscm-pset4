@@ -8,8 +8,11 @@ import Enrollments from "./views/Enrollments";
 import ViewGrades from "./views/ViewGrades";
 import FacultySections from "./views/FacultySections";
 import ViewSectionGrades from "./views/ViewSectionGrades";
+import EditSectionGrades from "./views/EditSectionGrades";
 
 function App() {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = user.role;
   return (
     <BrowserRouter>
       <Routes>
@@ -72,6 +75,27 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+<Route
+          path="/faculty/students/:sectionId"
+          element={
+            <ProtectedRoute allowedRoles={["FACULTY"]}>
+              <EditSectionGrades />
+            </ProtectedRoute>
+          }
+        />
+
+      <Route
+        path="*"
+        element={
+          role === "STUDENT"
+            ? <Navigate to="/courses" replace />
+            : role === "FACULTY"
+            ? <Navigate to="/faculty/sections" replace />
+            : <Navigate to="/login" replace />
+        }
+      />
+
       </Routes>
     </BrowserRouter>
   );
