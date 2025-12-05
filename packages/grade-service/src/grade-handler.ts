@@ -386,11 +386,11 @@ export async function handleGetSectionStudents(
         message: enrollError.message,
       });
     }
-
-    const students = (enrollments as any[] | null)?.map((e) => ({
+    
+    const students: StudentInfo[] = (enrollments || []).map((e: any) => ({
       student_id: e.student_id,
       name: e.users.name,
-    })) || [];
+    }));
 
     callback(null, { students });
   } catch (error: any) {
@@ -400,5 +400,4 @@ export async function handleGetSectionStudents(
     });
   }
 }
-
 
